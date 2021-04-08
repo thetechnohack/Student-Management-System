@@ -1,366 +1,371 @@
-#import essential libraries
-from cfonts import render
-from prettytable import from_csv,PrettyTable
-import csv
-import time
-import datetime
+import csv, os, datetime, time
+from termcolor import colored
+from prettytable import from_csv, PrettyTable
 
-# Define global variables
-student_fields = ['Name','Fathers Name','Class','Roll No','DOB','Sex(M/F/T)','Phone']
-student_database = 'students.csv'
+#fontcolors using termcolor
+class fontcolor():
+	def green(string):
+		return colored(string, "green", attrs=['bold'])
+	def white(string):
+		return colored(string, "white", attrs=['bold'])
+	def yellow(string):
+		return colored(string, "yellow", attrs=['bold'])
+	def cyan(string):
+		return colored(string, "cyan", attrs=['bold'])
+	def red(string):
+		return colored(string, "red", attrs=['bold'])
+	def blue(string):
+		return colored(string, "blue", attrs=['bold'])
 
-#banner artwork
-banner = render("s.i.s", colors=['yellow', 'green'], align='center')
-print(banner)
+#smb ==> symbols
+class smb:
+	WARN = fontcolor.red(" [-] ")
+	DONE = fontcolor.green(" [+] ")
+	INPUT = fontcolor.cyan(" [»] ")
+	INFO = fontcolor.yellow(" [!] ")
+	ARROW = fontcolor.cyan(" > ")
 
-#ending banner
-end_banner = render("Thank You", colors=['green', 'yellow'], align='center')
+banr = '''
+             ╔═╗   ╦   ╔═╗     STUDENT
+             ╚═╗   ║   ╚═╗     INFORMATION
+             ╚═╝   ╩   ╚═╝     SYSTEM
+          '''
 
-#colours used in program
-GREEN = '\x1b[1;32;40m'
-RED = '\x1b[1;31;40m'
-GREEN_WHITE = '\x1b[0;30;42m' 
-PURPLE = '\x1b[1;36;40m'
-U_YELLOW = '\x1b[4;33;40m' 
-WHITE = '\x1b[1;37;40m'
-YELLOW = '\x1b[1;33;40m'
-END = '\x1b[0m'
+def banner():
+	print(fontcolor.cyan(banr))
 
-#symbol used in program
-arrow_left = PURPLE  + '>>>' + END
-arrow_right = PURPLE + '<<<' + END
-block = '|'
-space =' '
-arrow = PURPLE + ' ##>' + END
-arrow_m = PURPLE + ' »' + END
-tick = GREEN + '✓✓ ' + END
-box = GREEN +' ['+END+YELLOW+'*'+END+GREEN +'] ' +END 
+class num:
+	one = fontcolor.yellow("[1] ")
+	two = fontcolor.yellow("[2] ")
+	three = fontcolor.yellow("[3] ")
+	four = fontcolor.yellow("[4] ")
+	five = fontcolor.yellow("[5] ")
+	six = fontcolor.yellow("[6] ")
+	seven = fontcolor.yellow("[7] ")
 
-#msg box variables 
-welcome_msg = GREEN + 'Welcome To Student Information System !' + END
-info_1 = GREEN + '\tAdd Student Information' + END
-info_2 = GREEN + '\tStudents Record !' +END
-info_3 = GREEN + '\tSearch Student !' +END
-info_4 = GREEN +'\tUpdate Student Information !'+END
-info_5 = RED +'\tDelete Student Record !'+END
-info_6 = YELLOW+'\tProject Development Team !'+END
+def border_msg(msg):
+    row = len(msg)
+    m = ''.join(['        +'] + ['-' *row] + ['+'])
+    h = fontcolor.cyan(m)
+    result= h + '\n' + fontcolor.cyan("        |") + fontcolor.white(msg) + fontcolor.cyan("|") + '\n' + h
+    print((result))
 
-#stylish numbers
-one = YELLOW+' ['+END+'1'+YELLOW+']'+END
-two = YELLOW+' ['+END+'2'+YELLOW+']'+END
-three = YELLOW+' ['+END+'3'+YELLOW+']'+END
-four = YELLOW+' ['+END+'4'+YELLOW+']'+END
-five = YELLOW+' ['+END+'5'+YELLOW+']'+END
-six = YELLOW+' ['+END+'6'+YELLOW+']'+END
-seven = YELLOW+' ['+END+'7'+YELLOW+']'+END
+choice_one = fontcolor.white("Add New Student")
+choice_two = fontcolor.white("View Students")
+choice_three = fontcolor.white("Search Student")
+choice_four = fontcolor.white("Update Student")
+choice_five = fontcolor.white("Delete Student")
+choice_six = fontcolor.white("Project Development Team")
+choice_seven = fontcolor.white("Quit")
 
-
-#choices
-w_one = WHITE + ' Add New Student' + END
-w_two = WHITE + ' View Students' + END
-w_three = WHITE + ' Search Student' + END
-w_four = WHITE + ' Update Student' + END
-w_five = WHITE + ' Delete Student' + END
-w_six = WHITE + ' Project Development Team'+END
-w_seven = WHITE + ' Quit' + END
-
-#input field colour
-w_input = WHITE + ' Enter Your Choice : ' + END
-
-#welcome msg_box
-l = ''.join(['+'] + ['-' *48] + ['+'])
-wlc_msg = l + '\n'+block+space+arrow_left+space+welcome_msg+space+arrow_right+space+block+'\n' + l
-
-#add student msg_box
-m = ''.join(['+'] + ['-' *40] + ['+'])
-result_1 = m + '\n' +info_1 + '\n' + m
-
-#view student msg_box
-n = ''.join(['+'] + ['-' *30] + ['+'])
-result_2 = n + '\n' + info_2 + '\n' + n
-
-#search student msg_box
-p = ''.join(['+'] + ['-' *30] + ['+'])
-result_3 = p + '\n' + info_3 + '\n' + p
-
-#update student msg_box
-q = ''.join(['+'] + ['-' *40] + ['+'])
-result_4 = q + '\n' + info_4 + '\n' + q
-
-#delete student recode msg_box
-r = ''.join(['+'] + ['-' *35] + ['+'])
-result_5 = r + '\n' + info_5 + '\n' + r
-
-#about us msg_box
-s = ''.join(['+'] + ['-'*40] + ['+'])
-result_6 = s + '\n' + info_6 + '\n' + s
-
-#press enter to continue msg
-def continue_msg():
-	       	print('\n')
-	       	input(arrow + YELLOW + " Press Enter To Continue : " + END)
-	       	print('\n')
-
-	
 #choice menu 
 def display_menu():
-	print(wlc_msg)
-	print(arrow+one+w_one)
-	print(arrow+two+w_two)
-	print(arrow+three+w_three)
-	print(arrow+four+w_four)
-	print(arrow+five+w_five)
-	print(arrow+six+w_six)
-	print(arrow+seven+w_seven)
-	print('\n')
+	banner()
+	border_msg(" Welcome To Student Information System ! ")
+	print("\n" + smb.ARROW + fontcolor.cyan("CHOOSE AN OPTION :") + "\n")
+	print(smb.ARROW + num.one + choice_one)
+	print(smb.ARROW + num.two + choice_two)
+	print(smb.ARROW + num.three + choice_three)
+	print(smb.ARROW + num.four + choice_four)
+	print(smb.ARROW + num.five + choice_five)
+	print(smb.ARROW + num.six + choice_six)
+	print(smb.ARROW + num.seven + choice_seven)
 
-#add student function
+raw_database = 'raw_data.csv'
+student_database = 'students.csv'
+
+#function for clearing screen
+def clr_scr():
+    if os.name == 'posix':
+        _ = os.system('clear')
+    else:
+        _ = os.system('cls')
+
+#press enter to continue message
+def continue_msg():
+	input("\n" + smb.ARROW + fontcolor.cyan("Press Enter To Continue : "))
+	clr_scr()
+
+##### validation functions #####
+def validate_name(name):
+	if name.replace(" ", "").isalpha():
+		pass
+	else:
+		print("\n" + smb.WARN + fontcolor.red("Name Is Invalid ! It Should Not Have Digits !"))
+		quit()
+
+def validate_class(value):
+	valid_classes = ('1','2','3','4','5','6','7','8,','9','10','11','12')
+	if value in valid_classes:
+		pass
+	else:
+		print("\n" + smb.WARN + fontcolor.red("Invalid Class !"))
+		quit()
+
+def validate_rollnum(rollnum):
+	try:
+		roll = int(rollnum)
+	except ValueError:
+		print("\n" + smb.WARN + fontcolor.red("Roll Number Must Be A Number !"))
+		quit()
+
+def validate_dob(dob):
+	try:
+		date_of_birth = datetime.datetime.strptime(dob, "%d/%m/%Y")
+	except:
+		print("\n" + smb.WARN + fontcolor.red("Incorrect date ! Valid Format Is (DD/MM/YYYY)"))
+		quit()
+
+def validate_sex(sex):
+	valid_sexes = set('mftMFT')
+	if sex in valid_sexes:
+		pass
+	else:
+		print("\n" + smb.WARN + fontcolor.red("Invalid Gender !"))
+		quit()
+
+def validate_phonenum(phonenum):
+	if len(phonenum) == 10:
+		try:
+			phone = int(phonenum)
+		except ValueError:
+			print("\n" + smb.WARN + fontcolor.red("Phone Number Must Not Contains Letters !"))
+			quit()
+	else:
+		print("\n" + smb.WARN + fontcolor.red("It Must Contain 10 Digits !"))
+		quit()
+
+# main-function-1
+#function to add students in database
 def add_student():
-	print(result_1)
+	print("\n")
+	border_msg(" Add A New Student's Information To Database ")
+	print("\n")
+	stu_name = input(smb.DONE + fontcolor.green("Student's Name : "))
+	validate_name(stu_name)
+	stu_father = input(smb.DONE + fontcolor.green("Father's Name : "))
+	validate_name(stu_father)
+	stu_class = input(smb.DONE + fontcolor.green("Class (1-12) : "))
+	validate_class(stu_class)
+	roll_num = input(smb.DONE + fontcolor.green("Roll No : "))
+	validate_rollnum(roll_num)
+	stu_dob = input(smb.DONE + fontcolor.green("DOB (DD/MM/YYYY) : "))
+	validate_dob(stu_dob)
+	stu_sex = input(smb.DONE + fontcolor.green("Sex (M/F/T) : "))
+	validate_sex(stu_sex)
+	phone_num = input(smb.DONE + fontcolor.green("Phone No (+91) : "))
+	validate_phonenum(phone_num)
 	
 	student_data = []
-	def validate_name():
-	   if name.replace(" ", "").isalpha():
-	   	pass
-	   else:
-	   	print("Input is invalid")
-	   	quit()
+	student_data.append(stu_name)
+	student_data.append(stu_father)
+	student_data.append(stu_class)
+	student_data.append(roll_num)
+	student_data.append(stu_dob)
+	student_data.append(stu_sex)
+	student_data.append(phone_num)
 
-	name = input(arrow_m +YELLOW+ " Name of Student : " + END)
-	validate_name()
+	header = ['Student','Father','Class','Roll No','DOB','Sex(M/F/T)','Phone']
+	with open(raw_database, 'a') as f:
+		writer = csv.writer(f)
+		writer.writerow(i for i in header)
+		writer.writerows([student_data])
+		f.close()
 	
-	father = input(arrow_m + YELLOW+" Father's Name' :" + END)
-	validate_name()
-	
-	def validate_class():
-		try:
-			val = int(clas)
-		except ValueError:
-			print("That's not an !")
-			quit()
-
-	clas = input(arrow_m +YELLOW +" Class :"+END)
-	validate_class()
-	
-	def validate_roll():
-		try:
-			val = int(roll)
-		except ValueError:
-			print("Sorry Invalid Input!!!")
-			quit()	
-	
-	roll = input(arrow_m + YELLOW +" Roll No. : "+ END)
-	validate_roll()
-	
-	def validate_dob():
-		date_format = '%d-%m-%Y'
-		try:
-			date_obj = datetime.datetime.strptime(dob, date_format)
-			print(date_obj)
-		except ValueError:
-			print("Incorrect data format,It should be YYYY-MM-DD")
-	
-	dob = input(arrow_m + YELLOW +" Date Of Birth :"+ END)
-	validate_dob()
-	
-	valid_sex = ['F','M','T','t','m','f','other']
-	def validate_sex():
-		if sex in valid_sex:
-			pass
+    #removing duplicate headers and writing new file 'students.csv'
+	inFile = open(raw_database, 'r')
+	outFile = open(student_database, 'w')
+	listLines = []
+	for line in inFile:
+		if line in listLines:
+			continue
 		else:
-			print("wrong input")	
+			outFile.write(line)
+			listLines.append(line)
+	outFile.close()
+	inFile.close()
 	
-	sex = input(arrow_m + YELLOW +" Sex(m/f/t):"+ END)
-	validate_sex()
-	
-	def validate_phone():
-		try:
-			val = int(phone)
-		except ValueError:
-			print("Incorrect Input!!")
-	
-	phone = input(arrow_m +YELLOW+" Phone no.:-"+ END)
-	validate_phone()
-	
-	student_data.append(name)
-	student_data.append(father)
-	student_data.append(clas)
-	student_data.append(roll)
-	student_data.append(dob)
-	student_data.append(sex)
-	student_data.append(phone)
-	
-	with open(student_database, "a", encoding="utf-8") as f:
-	       	writer = csv.writer(f)
-	       	writer.writerows([student_data])
-	       		       	
-	       	x = PrettyTable()
-	       	
-	       	x.field_names = [GREEN+'Name','Fathers Name','Class','Roll No','DOB','Sex(M/F/T)','Phone'+END]
-	  
-	       	x.add_row([PURPLE+student_data[0],student_data[1],student_data[2],student_data[3],student_data[4],student_data[5],student_data[6]+END])
-	       	print('\n')
-	       	print(x)
-	       	print('\n')
-	       	
-	       	print(tick+GREEN_WHITE + " Data Saved Successfully ! " + END)
-	       	continue_msg()
-	       	return
+	try:
+		x = PrettyTable()
+		x.field_names = header
+		x.add_row([student_data[0],student_data[1],student_data[2],student_data[3],student_data[4],student_data[5],student_data[6]])
+		print("\n" + smb.DONE + fontcolor.green("Quick Overview :"))
+		print(fontcolor.white(x))
+		print("\n" + smb.DONE + fontcolor.green("Data Saved Successfully !"))
+	except Exception:
+		print("\n" + smb.WARN + fontcolor.red("Something Went Wrong ! Check Your Code !"))
+	finally:
+		continue_msg()
 
-#function view students
+# main-function-2
+#function to view the list of students in database
 def view_students():
-	print(result_2)
 	print("\n")
-	
-	
-	fp = open("students.csv", "r")
-	file = from_csv(fp)
-	fp.close()
-	print(file)
-	continue_msg()
-	
-#function search student
-def search_student():
-    print(result_3)
-    
-    roll = input(arrow_m+ YELLOW + " Enter Roll No. To Search: " + END)
-    with open(student_database, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            if len(row) > 0:
-                if roll == row[3]:
-                    print('\n')
-                    
-                    ['Name','Fathers Name','Class','Roll No','DOB','Sex(M/F/T)','Phone']
-                    print(GREEN+"\t----- Student Found -----" + END)
-                    print(box+YELLOW+"Student Name:"+ END,PURPLE +row[0]+END)
-                    print(box+YELLOW+"Father's Name:"+END,PURPLE+row[1]+END)
-                    print(box+YELLOW+"Class: "+END,PURPLE+row[2]+END)
-                    print(box+YELLOW+"Roll No: "+END,PURPLE+row[3]+END)
-                    print(box+YELLOW+"DOB (DD/MM/YYYY): "+END,PURPLE+row[4]+END)
-                    print(box+YELLOW+"Sex(M/F/T): "+END,PURPLE+row[5]+END)
-                    print(box+YELLOW+"Phone No. : "+END,PURPLE+row[6]+END)
-                    continue_msg()
-                    break
-        else:
-            print(box+RED+"ALERT!"+END)
-            print(RED+' ×'*20+END)
-            print(RED+" Student Not Found In Our Database !!!" +END)
-            continue_msg()
+	border_msg(" Student's Record In Our Information System ")
+	try:
+		fp = open(student_database, "r")
+		file = from_csv(fp)
+		fp.close()
+		print(file)
+	except (csv.Error, FileNotFoundError):
+		print("\n" + smb.WARN + fontcolor.red("Something Went Wrong ! Check 'students.csv' File !"))
+	finally:
+		continue_msg()
 
-#function update student
+# main-function-3
+#function to search student with roll num
+def search_student():
+	print("\n")
+	border_msg(" Search For A Student Inside Database ")
+	roll = input("\n" + smb.DONE + fontcolor.green("Enter Roll No. To Search : "))
+	try:
+		fd = open(student_database, "r", encoding="utf-8")
+		reader = csv.reader(fd)
+		for row in reader:
+			if len(row) > 0:
+				if roll == row[3]:
+					print("\n")
+					print(fontcolor.green("\t----- STUDENT FOUND -----") + "\n")
+					print(smb.DONE + fontcolor.green("Student's Name : ") + row[0])
+					print(smb.DONE + fontcolor.green("Father's Name : ") + row[1])
+					print(smb.DONE + fontcolor.green("Class : ") + row[2])
+					print(smb.DONE + fontcolor.green("Roll No : ") + row[3])
+					print(smb.DONE + fontcolor.green("DOB (DD/MM/YYYY) : ") + row[4])
+					print(smb.DONE + fontcolor.green("Sex (M/F/T) : ") + row[5])
+					print(smb.DONE + fontcolor.green("Phone No : ") + row[6])
+					break
+		else:
+			print("\n" + smb.WARN + fontcolor.red("Student Not Found In Our Database !!!"))
+		
+	except FileNotFoundError:
+		print("\n" + smb.WARN + fontcolor.red("No Records To Search !"))
+	finally:
+		continue_msg()
+
+#main-function-4
+#function to update student data
 def update_student():
-    print(result_4)
+    print("\n")
+    border_msg(" Update Student's Record In Database ")
+    roll_num = input("\n" + smb.DONE + fontcolor.green("Enter Roll No. To Update : "))
+    try:
+    	index_student = None
+    	updated_data = []
+    	fe = open(student_database, "r", encoding="utf-8")
+    	reader = csv.reader(fe)
+    	counter = 0
+    	
+    	for row in reader:
+    		if len(row) > 0:
+    			if roll_num == row[3]:
+    				index_student = counter
+    				print("\n" + fontcolor.green('\t----- RECORD FOUND -----') + "\n")
+    				print(smb.DONE + fontcolor.cyan("Student Found At Index =>"), index_student)
+    				print(smb.DONE + fontcolor.cyan("Student's Name =>"), row[0])
+    				student_data = []
+    				print("\n")
+    				
+    				new_stu_name = input(smb.DONE + fontcolor.green("Enter Student's New Name : "))
+    				validate_name(new_stu_name)
+    				new_stu_father = input(smb.DONE + fontcolor.green("Enter Father's New Name : "))
+    				validate_name(new_stu_father)
+    				new_stu_class = input(smb.DONE + fontcolor.green("Enter New Class (1-12) : "))
+    				validate_class(new_stu_class)
+    				new_roll_num = input(smb.DONE + fontcolor.green("Enter New Roll No : "))
+    				validate_rollnum(new_roll_num)
+    				new_stu_dob = input(smb.DONE + fontcolor.green("Enter New DOB (DD/MM/YYYY) : "))
+    				validate_dob(new_stu_dob)
+    				new_stu_sex = input(smb.DONE + fontcolor.green("Enter New Sex (M/F/T) : "))
+    				validate_sex(new_stu_sex)
+    				new_phone_num = input(smb.DONE + fontcolor.green("Enter New Phone No (+91) : "))
+    				validate_phonenum(new_phone_num)
+    				
+    				student_data.append(new_stu_name)
+    				student_data.append(new_stu_father)
+    				student_data.append(new_stu_class)
+    				student_data.append(new_roll_num)
+    				student_data.append(new_stu_dob)
+    				student_data.append(new_stu_sex)
+    				student_data.append(new_phone_num)
+
+    				updated_data.append(student_data)
+    			
+    			else:
+    				updated_data.append(row)
+    			counter += 1
     
-    roll = input(arrow_m+ YELLOW + " Enter Roll No. To Update : " + END)
-    
-    index_student = None
-    updated_data = []
-    with open(student_database, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        counter = 0
-        for row in reader:
-            if len(row) > 0:
-                if roll == row[3]:
-                    index_student = counter
-                    print('\n')
-                    print(PURPLE+'\t------RECORD FOUND------'+END)
-                    print(box+GREEN+"Student Found At Index No "+END,index_student)
-                    student_data = []
-                    for field in student_fields:
-                        value = input(arrow_m +YELLOW+ " Enter New " + field + ": " + END)
-                        student_data.append(value)
-                    updated_data.append(student_data)
-                else:
-                    updated_data.append(row)
-                counter += 1
- 
- # Check if the record is found or not
+    except FileNotFoundError:
+    	print("\n" + smb.WARN + fontcolor.red("No Records To Update !"))
+
+#writing update to csv file
     if index_student is not None:
         with open(student_database, "w", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerows(updated_data)
-            print('\n')
-            print(tick+GREEN_WHITE + " Data Updated Successfully ! " + END)
+            print("\n" + smb.DONE + fontcolor.green("Data Updated Successfully ! "))
             continue_msg()
     else:
-        print(box+RED+"ALERT!"+END)
-        print(RED+' ×'*20+END)
-        print(RED+" Student Not Found In Our Database !!!" +END)
+        print("\n" + smb.WARN + fontcolor.red("Student Not Found In Our Database !!!"))
         continue_msg()
         
-
-#function delete students
+# main-function-5
+#function to delete student record
 def delete_student():
-    print(result_5)
+    border_msg(" Delete Student's Record From Database ")
+    roll = input("\n" + smb.WARN + fontcolor.red("Enter Roll No. To Delete : "))
     
-    roll = input(arrow_m+ YELLOW + " Enter Roll No. To Delete : " + END)
+    try:
+    	student_found = False
+    	updated_data = []
+    	ff = open(student_database, "r", encoding="utf-8")
+    	reader = csv.reader(ff)
+    	counter = 0
+    	for row in reader:
+    		if len(row) > 0:
+    			if roll != row[3]:
+    				updated_data.append(row)
+    				counter += 1
+    			else:
+    				student_found = True
     
-    student_found = False
-    updated_data = []
-    with open(student_database, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        counter = 0
-        for row in reader:
-            if len(row) > 0:
-                if roll != row[3]:
-                    updated_data.append(row)
-                    counter += 1
-                else:
-                    student_found = True
+    except FileNotFoundError:
+    	print("\n" + smb.WARN + fontcolor.red("No Records To Delete !"))
 
     if student_found is True:
         with open(student_database, "w", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerows(updated_data)
-            
-            print('\n')
-        print(tick+GREEN_WHITE+"Roll no.", roll, "Deleted successfully"+END)
+        print("\n" + smb.DONE + fontcolor.green("Roll No. Deleted Successfully"))
         continue_msg()
     else:
-    	print(box+RED+"ALERT!"+END)
-    	print(RED+' ×'*20+END)
-    	print(RED+" Roll No. Not Found In Our Database !!!" +END)
+    	print("\n" + smb.WARN + fontcolor.red("Roll No. Not Found In Our Database !!!"))
     	continue_msg()
 
-name_1 = 'Vivek Malviya'
-name_2 = 'Gopal Kalsiya'
-name_3 = 'Deepesh Rathore'
-name_4 = 'Naval Barodh'
-
-designation_1 = 'Student'
-designation_2 = 'Student'
-designation_3 = 'Student'
-designation_4 = 'Student'
-
-class_1 = 'XII(PCB)'
-class_2 = 'XII(PCM)'
-class_3 = 'XII(PCM)'
-class_4 = 'XII(PCM)'
-
-
-#about us wala function
+#main-function-6
+#about us
 def about_us():
-	print(result_6)
-	
+	print("\n")
+	border_msg(" Project Development Team ")
+	#print("\n")
 	z = PrettyTable()
-	z.field_names = [PURPLE+"Team member","Designation","class"+END]
+	field_1 = fontcolor.green("Team Member")
+	field_2 = fontcolor.green("Designation")
+	field_3 = fontcolor.green("Standard")
+	z.field_names = [field_1,field_2,field_3]
 	
-	z.add_row([name_1, designation_1,class_1])
-	z.add_row([name_2, designation_2,class_2])
-	z.add_row([name_3, designation_3,class_3])
-	z.add_row([name_4, designation_4,class_4])
-	
+	z.add_row(['Sumit Patidar', 'hahaha','XII'])
+	z.add_row(['Sumit Patidar', 'hahaha','XII'])
+	z.add_row(['Sumit Patidar', 'hahaha','XII'])
+	z.add_row(['Sumit Patidar', 'hahaha','XII'])
+
 	print(z)
-	
 	continue_msg()
 
-
-
+#looping the whole program
 while True:
     display_menu()
-
-    choice = input(arrow+w_input)
+    
+    choice = input("\n" + smb.ARROW + fontcolor.cyan("Enter Your Choice : "))
     if choice == '1':
         add_student()
     elif choice == '2':
@@ -374,13 +379,10 @@ while True:
     elif choice == '6':
     	about_us()
     elif  choice == '7':
-    	print('\n')
-    	print(box+PURPLE+"Thanks For Using Our Student Management System"+END)
-    	
-    	print(box+YELLOW+"Quitting...."+END)
+    	print("\n" + smb.DONE + fontcolor.green("Thanks For Using Our Student Information System"))
+    	print(smb.WARN + fontcolor.red("Quitting...."))
     	time.sleep(2)
-    	print(end_banner)
     	quit()
     else:
-    	   print(box+RED+'Sorry! Enter a valid input !'+END)
+    	   print("\n" + smb.WARN + fontcolor.red("Please, Enter A Valid Input !"))
     	   break
